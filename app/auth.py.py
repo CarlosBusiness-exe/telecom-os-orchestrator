@@ -2,19 +2,18 @@ import httpx
 import os
 from dotenv import load_dotenv
 
-# Tenta carregar o arquivo .env da pasta atual
 load_dotenv()
 
-VIGO_URL = os.getenv("VIGO_BASE_URL")
+VIGO_URL_BASE = os.getenv("VIGO_BASE_URL")
 LOGIN = os.getenv("VIGO_LOGIN")
 SENHA = os.getenv("VIGO_SENHA")
 
 async def get_auth_token():
-    url = f"{VIGO_URL}/api/auth"
+    url = f"{VIGO_URL_BASE}/api/auth"
      
     payload = {
-        "login": str(LOGIN).strip(),
-        "senha": str(SENHA).strip()
+        "login": str(LOGIN),
+        "senha": str(SENHA)
     }
     
     headers = {
@@ -36,4 +35,3 @@ async def get_auth_token():
     except Exception as e:
         print(f"Erro ao conectar com a API: {e}")
         return None
-    
