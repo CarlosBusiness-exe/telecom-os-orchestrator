@@ -53,13 +53,10 @@ async def fetch_os_details(os_id: str, base_url: str = VIGO_URL, token: str = TO
                     "cli_loc":dict_data["anotacao_tecnica"]
                 }
 
-                print("################ TEST ################")
-                print(json.dumps(formated_data, indent=4))
-                print("################ TEST ################")
+                #print("################ FORMATED DATA TEST ################")
+                #print(json.dumps(formated_data, indent=4))
 
-                response_list = [response.json(), formated_data]
-
-                return response_list
+                return formated_data
             else:
                 print(f"API Error: {response.status_code} - {response.text}")
                 return None
@@ -93,6 +90,15 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
             response = await client.post(cli_url, json=payload, headers=headers)
 
             if response.status_code==200:
+                dict_data = response.json()
+
+                formated_data = {
+                    "cli_id":dict_data["id"],
+                    "cli_name":dict_data["nome"],
+                    "loc":dict_data["referencia"],
+
+                }
+
                 return response.json()
             else:
                 print(f"API Error: {response.status_code} - {response.text}")
@@ -101,10 +107,20 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
             print(f"Connection error: {exc.request.url!r}")
             return None
         
+@app.get("/marker_create/{os_id}", status_code=status.HTTP_200_OK)
+async def marker_create(os_id: str):
+    description = await fetch_os_details(os_id, VIGO_URL, TOKEN)
+
+    print("################ DESCRIPTION ################")
+    print(json.dumps(description, indent=4))
+
+    kml = simplekml.Kml()
+    kml.newpoint(name=f"OS N° = {os_id}", coords=[(-47.962979, -18.153650)], description=json.dumps(description, indent=4))
+    kml.save("OS {os_id} MAP.kml")
+
+    return description
 
 if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-    #result_os = asyncio.run(fetch_os_details("105804"))
-    #print(result_os)
