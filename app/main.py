@@ -50,12 +50,14 @@ async def fetch_os_details(os_id: str, base_url: str = VIGO_URL, token: str = TO
                     "cli_login":None,
                     "cli_pass":None,
                     "cli_panel":None,
-                    "cli_loc":dict_data["anotacao_tecnica"]
+                    "cli_loc":dict_data["anotacao_tecnica"],
+                    "cli_address":None
                 }
 
                 #print("################ FORMATED DATA TEST ################")
                 #print(json.dumps(formated_data, indent=4))
-
+                
+                #return dict_data
                 return formated_data
             else:
                 print(f"API Error: {response.status_code} - {response.text}")
@@ -109,16 +111,28 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
         
 @app.get("/marker_create/{os_id}", status_code=status.HTTP_200_OK)
 async def marker_create(os_id: str):
-    description = await fetch_os_details(os_id, VIGO_URL, TOKEN)
+    client_data = await fetch_os_details(os_id, VIGO_URL, TOKEN)
 
-    print("################ DESCRIPTION ################")
-    print(json.dumps(description, indent=4))
+    print("################ client_data ################")
+    print(json.dumps(client_data, indent=4))
 
     kml = simplekml.Kml()
-    kml.newpoint(name=f"OS N° = {os_id}", coords=[(-47.962979, -18.153650)], description=json.dumps(description, indent=4))
-    kml.save("OS {os_id} MAP.kml")
+    kml.newpoint(
+        name=f"{client_data['cli_id']} - {client_data['cli_name']}", 
+        coords=[(-47.962979, -18.153650)], 
+        description=(
+            f"SUPORTE A SER REALIZADO<br><br>"
+            f"{client_data['cli_id']} - {client_data['cli_name']}<br><br>"
+            f"LOGIN: {client_data['cli_login']}<br>"
+            f"SENHA: {client_data['cli_pass']}<br>"
+            f"PAINEL: {client_data['cli_panel']}<br><br>"
+            f"Localização: {client_data['cli_loc']}<br>"
+            f"Endereço: {client_data['cli_address']}"
+        )
+    )
+    kml.save(f"OS {os_id} MAP.kml")
 
-    return description
+    return client_data
 
 if __name__ == "__main__":
     import uvicorn
