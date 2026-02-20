@@ -42,6 +42,9 @@ async def fetch_os_details(os_id: str, base_url: str = VIGO_URL, token: str = TO
             
             if response.status_code == 200:
                 list_data = response.json()
+                if not list_data or not isinstance(list_data, list):
+                    print("API returned empty or invalid data format.")
+                    return None
                 dict_data = list_data[0]
 
                 formated_data = {
@@ -105,6 +108,10 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
 async def marker_create(os_id: str):
     os_data = await fetch_os_details(os_id, VIGO_URL, TOKEN)
     client_data = await fetch_client_data(os_data['cli_id'], VIGO_URL, TOKEN)
+    lon = client_data.get('longitude')
+    lat = client_data.get('latitude')
+    if not lon or not lat:
+        print(f"Error: Missing coordinates for client {os_data.get('cli_id')}")
     clean_description = os_data['os_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
 
     print("################ os_data ################")
@@ -114,7 +121,7 @@ async def marker_create(os_id: str):
     kml = simplekml.Kml()
     kml.newpoint(
         name=f"{os_data['cli_id']} - {os_data['cli_name']}", 
-        coords=[(client_data['longitude'], client_data['latitude'])], 
+        coords=[(lon, lat)], 
         description=(
             f"SUPORTE A SER REALIZADO<br><br>"
             f"{os_data['cli_id']} - {os_data['cli_name']}<br><br>"
@@ -126,7 +133,7 @@ async def marker_create(os_id: str):
             f"Solucionar:<br>{clean_description}"
         )
     )
-    kml.save(f"OS {os_id} MAP.kml")
+    kml.save(f"OS_{os_id}_MAP.kml")
 
     return os_data
 
