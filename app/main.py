@@ -51,7 +51,8 @@ async def fetch_os_details(os_id: str, base_url: str = VIGO_URL, token: str = TO
                     "cli_pass":None,
                     "cli_panel":None,
                     "cli_loc":dict_data["anotacao_tecnica"],
-                    "cli_address":None
+                    "cli_address":None,
+                    "os_desc":dict_data["historico"]
                 }
 
                 #print("################ FORMATED DATA TEST ################")
@@ -82,7 +83,7 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
 
     payload = {
         "campo1": "ID",
-        "campo1_valor": cli_id,
+        "campo1_valor": str(cli_id),
         "campo2": "none",
         "campo2_valor": "none"
     }
@@ -92,15 +93,6 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
             response = await client.post(cli_url, json=payload, headers=headers)
 
             if response.status_code==200:
-                dict_data = response.json()
-
-                formated_data = {
-                    "cli_id":dict_data["id"],
-                    "cli_name":dict_data["nome"],
-                    "loc":dict_data["referencia"],
-
-                }
-
                 return response.json()
             else:
                 print(f"API Error: {response.status_code} - {response.text}")
@@ -111,28 +103,32 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
         
 @app.get("/marker_create/{os_id}", status_code=status.HTTP_200_OK)
 async def marker_create(os_id: str):
-    client_data = await fetch_os_details(os_id, VIGO_URL, TOKEN)
+    os_data = await fetch_os_details(os_id, VIGO_URL, TOKEN)
+    client_data = await fetch_client_data(os_data['cli_id'], VIGO_URL, TOKEN)
+    clean_description = os_data['os_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
 
-    print("################ client_data ################")
-    print(json.dumps(client_data, indent=4))
+    print("################ os_data ################")
+    print(f"Longitude = {client_data['longitude']}, Latitude = {client_data['latitude']}")
+    print(json.dumps(os_data, indent=4))
 
     kml = simplekml.Kml()
     kml.newpoint(
-        name=f"{client_data['cli_id']} - {client_data['cli_name']}", 
-        coords=[(-47.962979, -18.153650)], 
+        name=f"{os_data['cli_id']} - {os_data['cli_name']}", 
+        coords=[(client_data['longitude'], client_data['latitude'])], 
         description=(
             f"SUPORTE A SER REALIZADO<br><br>"
-            f"{client_data['cli_id']} - {client_data['cli_name']}<br><br>"
-            f"LOGIN: {client_data['cli_login']}<br>"
-            f"SENHA: {client_data['cli_pass']}<br>"
-            f"PAINEL: {client_data['cli_panel']}<br><br>"
-            f"Localização: {client_data['cli_loc']}<br>"
-            f"Endereço: {client_data['cli_address']}"
+            f"{os_data['cli_id']} - {os_data['cli_name']}<br><br>"
+            f"LOGIN: {os_data['cli_login']}<br>"
+            f"SENHA: {os_data['cli_pass']}<br>"
+            f"PAINEL: {os_data['cli_panel']}<br><br>"
+            f"Localização: {os_data['cli_loc']}<br>"
+            f"Endereço: {os_data['cli_address']}<br><br>"
+            f"Solucionar:<br>{clean_description}"
         )
     )
     kml.save(f"OS {os_id} MAP.kml")
 
-    return client_data
+    return os_data
 
 if __name__ == "__main__":
     import uvicorn
