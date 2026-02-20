@@ -6,15 +6,25 @@ from dotenv import load_dotenv
 
 from fastapi import FastAPI
 from fastapi import status
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import  FileResponse, HTMLResponse
 
 import simplekml
 
+
+
 app: FastAPI = FastAPI(title="OS Orchstrator")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 load_dotenv()
 
 VIGO_URL = os.getenv("VIGO_BASE_URL")
 TOKEN = os.getenv("TOKEN")
+
+@app.get("/", response_class=HTMLResponse)
+async def index():
+    with open("static/index.html", "r") as f:
+        return f.read()
 
 @app.get("/os/{os_id}", status_code=status.HTTP_200_OK)
 async def fetch_os_details(os_id: str, base_url: str = VIGO_URL, token: str = TOKEN):
@@ -104,7 +114,7 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
             print(f"Connection error: {exc.request.url!r}")
             return None
         
-@app.get("/marker_create/{os_id}", status_code=status.HTTP_200_OK)
+@app.get("/marker_create/{os_id}")
 async def marker_create(os_id: str):
     os_data = await fetch_os_details(os_id, VIGO_URL, TOKEN)
     client_data = await fetch_client_data(os_data['cli_id'], VIGO_URL, TOKEN)
@@ -133,9 +143,13 @@ async def marker_create(os_id: str):
             f"Solucionar:<br>{clean_description}"
         )
     )
-    kml.save(f"OS_{os_id}_MAP.kml")
 
-    return os_data
+    filename = f"OS_{os_id}_MAP.kml"
+    kml.save(filename)
+    
+    if os.path.exists(filename):
+        return FileResponse(path=filename, filename=filename, media_type='application/vnd.google-earth.kml+xml')
+    return {"error": "File generation failed"}
 
 if __name__ == "__main__":
     import uvicorn

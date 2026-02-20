@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Telecom OS Orchestrator</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; padding-top: 50px; }
+        .card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; box-shadow: 2px 2px 10px #eee; }
+        input { padding: 8px; margin-right: 10px; }
+        button { padding: 8px 15px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>Generate OS Map</h2>
+        <input type="text" id="osId" placeholder="Enter OS ID">
+        <button onclick="downloadKML()">Download KML</button>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        async function downloadKML() {
+            const osId = document.getElementById('osId').value;
+            const status = document.getElementById('status');
+            if (!osId) return alert("Please enter an OS ID");
+
+            status.innerText = "Processing...";
+            
+            // Redirects browser to the download endpoint
+            window.location.href = `/marker_create/${osId}`;
+            
+            setTimeout(() => { status.innerText = "Check your downloads!"; }, 2000);
+        }
+    </script>
+</body>
+</html>
