@@ -11,8 +11,6 @@ from fastapi.responses import  FileResponse, HTMLResponse
 
 import simplekml
 
-
-
 app: FastAPI = FastAPI(title="OS Orchstrator")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -106,7 +104,12 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
             response = await client.post(cli_url, json=payload, headers=headers)
 
             if response.status_code==200:
-                return response.json()
+                data =  response.json()
+
+                if data.get("situacao") == "L":
+                    return data
+                
+                return {"message": f"Client {cli_id} is not 'L'. Current status: {data.get('situacao')}"}
             else:
                 print(f"API Error: {response.status_code} - {response.text}")
                 return None
@@ -150,6 +153,92 @@ async def marker_create(os_id: str):
     if os.path.exists(filename):
         return FileResponse(path=filename, filename=filename, media_type='application/vnd.google-earth.kml+xml')
     return {"error": "File generation failed"}
+
+@app.get("/get_open_os/")
+async def fetch_os_by_filter(campo1: str = "h_fechamento", valor1: str = "", campo2: str = "dt_fechamento", valor2: str = "0001-01-01T00:00:00"):
+    url = f"{VIGO_URL}/api/app_getcustom"
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {TOKEN}"
+    }
+
+    payload = {
+        "campo1": campo1,
+        "campo1_valor": valor1,
+        "campo2": None,
+        "campo2_valor": None
+    }
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, json=payload, headers=headers)
+            
+            if response.status_code == 200:
+                list_opened_os = response.json()
+
+                city_os = [
+                    {
+                    "cli_id":os["id_cliente"],
+                    "cli_name":os["nome"],
+                    "cli_login":None,
+                    "cli_pass":None,
+                    "cli_panel":None,
+                    "Tipo":os["desc_tatendimento"],
+                    "cli_loc":os["anotacao_tecnica"],
+                    "cli_address":None,
+                    "os_desc":os["historico"]
+                } for os in list_opened_os if os['cidade'] == "Catalão" and os['desc_tatendimento'] == "Suporte (rádio/fibra)"
+                ]
+                
+                return city_os
+            else:
+                print(f"Erro na API: {response.status_code} - {response.text}")
+                return None
+        except httpx.RequestError as exc:
+            print(f"Erro de conexão ao buscar filtros: {exc}")
+            return None
+        
+@app.get("/list_marker_create/")
+async def create_marker_list():
+    os_list = await fetch_os_by_filter()
+    
+    kml = simplekml.Kml()
+
+    for os in os_list:
+        client_data = await fetch_client_data(os['cli_id'], VIGO_URL, TOKEN)
+        if not client_data:
+            continue
+        lon = client_data.get('longitude')
+        lat = client_data.get('latitude')
+        
+        if not lon or not lat:
+            print(f"Error: Missing coordinates for client {os.get('cli_id')}")
+            continue
+
+        clean_description = os['os_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
+
+        kml.newpoint(
+            name=f"{os['cli_id']} - {os['cli_name']}", 
+            coords=[(lon, lat)], 
+            description=(
+                f"SUPORTE A SER REALIZADO<br><br>"
+                f"{os['cli_id']} - {os['cli_name']}<br><br>"
+                f"LOGIN: {os['cli_login']}<br>"
+                f"SENHA: {os['cli_pass']}<br>"
+                f"PAINEL: {os['cli_panel']}<br><br>"
+                f"Localização: {os['cli_loc']}<br>"
+                f"Endereço: {os['cli_address']}<br><br>"
+                f"Solucionar:<br>{clean_description}"
+            )
+        )
+
+    filename = "OS_MAP_GLOBAL.kml"
+    kml.save(filename)
+
+    return {
+        "status": f"Arquivo salvo localmente"
+    }
 
 if __name__ == "__main__":
     import uvicorn
