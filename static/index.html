@@ -15,6 +15,7 @@
         <h2>Generate OS Map</h2>
         <input type="text" id="osId" placeholder="Enter OS ID">
         <button onclick="downloadKML()">Download KML</button>
+        <button onclick="downloadFullKML()">Download Full KML</button>
         <p id="status"></p>
     </div>
 
@@ -26,9 +27,14 @@
 
             status.innerText = "Processing...";
             
-            // Redirects browser to the download endpoint
             window.location.href = `/marker_create/${osId}`;
             
+            setTimeout(() => { status.innerText = "Check your downloads!"; }, 2000);
+        }
+
+        async function downloadFullKML() {
+            window.location.href = `/list_marker_create/`;
+
             setTimeout(() => { status.innerText = "Check your downloads!"; }, 2000);
         }
     </script>
