@@ -11,7 +11,7 @@ from fastapi.responses import  FileResponse, HTMLResponse
 
 import simplekml
 
-app: FastAPI = FastAPI(title="OS Orchstrator")
+app: FastAPI = FastAPI(title="Service Order Orchstrator")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 load_dotenv()
@@ -24,13 +24,13 @@ async def index():
     with open("static/index.html", "r") as f:
         return f.read()
 
-@app.get("/os/{os_id}", status_code=status.HTTP_200_OK)
-async def fetch_os_details(os_id: str, base_url: str = VIGO_URL, token: str = TOKEN):
+@app.get("/order/{order_id}", status_code=status.HTTP_200_OK)
+async def fetch_order_details(order_id: str, base_url: str = VIGO_URL, token: str = TOKEN):
     if not base_url or not token:
         print("Error: Missing VIGO_BASE_URL or TOKEN in environment.")
         return None
 
-    url_os = f"{base_url}/api/app_getcustom"
+    url_order = f"{base_url}/api/app_getcustom"
     
     headers = {
         "Content-Type": "application/json",
@@ -39,14 +39,14 @@ async def fetch_os_details(os_id: str, base_url: str = VIGO_URL, token: str = TO
 
     payload = {
         "campo1": "id",
-        "campo1_valor": str(os_id),
+        "campo1_valor": str(order_id),
         "campo2": "none",
         "campo2_valor": "none"
     }
 
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.post(url_os, json=payload, headers=headers)
+            response = await client.post(url_order, json=payload, headers=headers)
             
             if response.status_code == 200:
                 list_data = response.json()
@@ -63,7 +63,7 @@ async def fetch_os_details(os_id: str, base_url: str = VIGO_URL, token: str = TO
                     "cli_panel":None,
                     "cli_loc":dict_data["anotacao_tecnica"],
                     "cli_address":None,
-                    "os_desc":dict_data["historico"]
+                    "order_desc":dict_data["historico"]
                 }
 
                 #print("################ FORMATED DATA TEST ################")
@@ -117,45 +117,45 @@ async def fetch_client_data(cli_id: str, base_url: str = VIGO_URL, token: str = 
             print(f"Connection error: {exc.request.url!r}")
             return None
         
-@app.get("/marker_create/{os_id}")
-async def marker_create(os_id: str):
-    os_data = await fetch_os_details(os_id, VIGO_URL, TOKEN)
-    client_data = await fetch_client_data(os_data['cli_id'], VIGO_URL, TOKEN)
+@app.get("/marker_create/{order_id}")
+async def marker_create(order_id: str):
+    order_data = await fetch_order_details(order_id, VIGO_URL, TOKEN)
+    client_data = await fetch_client_data(order_data['cli_id'], VIGO_URL, TOKEN)
     lon = client_data.get('longitude')
     lat = client_data.get('latitude')
     if not lon or not lat:
-        print(f"Error: Missing coordinates for client {os_data.get('cli_id')}")
-    clean_description = os_data['os_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
+        print(f"Error: Missing coordinates for client {order_data.get('cli_id')}")
+    clean_description = order_data['order_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
 
-    print("################ os_data ################")
+    print("################ order_data ################")
     print(f"Longitude = {client_data['longitude']}, Latitude = {client_data['latitude']}")
-    print(json.dumps(os_data, indent=4))
+    print(json.dumps(order_data, indent=4))
 
     kml = simplekml.Kml()
     kml.newpoint(
-        name=f"{os_data['cli_id']} - {os_data['cli_name']}", 
+        name=f"{order_data['cli_id']} - {order_data['cli_name']}", 
         coords=[(lon, lat)], 
         description=(
             f"SUPORTE A SER REALIZADO<br><br>"
-            f"{os_data['cli_id']} - {os_data['cli_name']}<br><br>"
-            f"LOGIN: {os_data['cli_login']}<br>"
-            f"SENHA: {os_data['cli_pass']}<br>"
-            f"PAINEL: {os_data['cli_panel']}<br><br>"
-            f"Localização: {os_data['cli_loc']}<br>"
-            f"Endereço: {os_data['cli_address']}<br><br>"
+            f"{order_data['cli_id']} - {order_data['cli_name']}<br><br>"
+            f"LOGIN: {order_data['cli_login']}<br>"
+            f"SENHA: {order_data['cli_pass']}<br>"
+            f"PAINEL: {order_data['cli_panel']}<br><br>"
+            f"Localização: {order_data['cli_loc']}<br>"
+            f"Endereço: {order_data['cli_address']}<br><br>"
             f"Solucionar:<br>{clean_description}"
         )
     )
 
-    filename = f"OS_{os_id}_MAP.kml"
+    filename = f"order_{order_id}_MAP.kml"
     kml.save(filename)
     
     if os.path.exists(filename):
         return FileResponse(path=filename, filename=filename, media_type='application/vnd.google-earth.kml+xml')
     return {"error": "File generation failed"}
 
-@app.get("/get_open_os/")
-async def fetch_os_by_filter(campo1: str = "h_fechamento", valor1: str = "", campo2: str = "dt_fechamento", valor2: str = "0001-01-01T00:00:00"):
+@app.get("/get_open_order/")
+async def fetch_order_by_filter(campo1: str = "h_fechamento", valor1: str = ""):
     url = f"{VIGO_URL}/api/app_getcustom"
     
     headers = {
@@ -175,23 +175,23 @@ async def fetch_os_by_filter(campo1: str = "h_fechamento", valor1: str = "", cam
             response = await client.post(url, json=payload, headers=headers)
             
             if response.status_code == 200:
-                list_opened_os = response.json()
+                list_opened_order = response.json()
 
-                city_os = [
+                city_order = [
                     {
-                    "cli_id":os["id_cliente"],
-                    "cli_name":os["nome"],
+                    "cli_id":order["id_cliente"],
+                    "cli_name":order["nome"],
                     "cli_login":None,
                     "cli_pass":None,
                     "cli_panel":None,
-                    "Tipo":os["desc_tatendimento"],
-                    "cli_loc":os["anotacao_tecnica"],
+                    "Tipo":order["desc_tatendimento"],
+                    "cli_loc":order["anotacao_tecnica"],
                     "cli_address":None,
-                    "os_desc":os["historico"]
-                } for os in list_opened_os if os['cidade'] == "Catalão" and os['desc_tatendimento'] == "Suporte (rádio/fibra)"
+                    "order_desc":order["historico"]
+                } for order in list_opened_order if order['cidade'] == "Catalão" and order['desc_tatendimento'] == "Suporte (rádio/fibra)"
                 ]
                 
-                return city_os
+                return city_order
             else:
                 print(f"Erro na API: {response.status_code} - {response.text}")
                 return None
@@ -201,44 +201,44 @@ async def fetch_os_by_filter(campo1: str = "h_fechamento", valor1: str = "", cam
         
 @app.get("/list_marker_create/")
 async def create_marker_list():
-    os_list = await fetch_os_by_filter()
+    order_list = await fetch_order_by_filter()
     
     kml = simplekml.Kml()
 
-    for os in os_list:
-        client_data = await fetch_client_data(os['cli_id'], VIGO_URL, TOKEN)
+    for order in order_list:
+        client_data = await fetch_client_data(order['cli_id'], VIGO_URL, TOKEN)
         if not client_data:
             continue
         lon = client_data.get('longitude')
         lat = client_data.get('latitude')
         
         if not lon or not lat:
-            print(f"Error: Missing coordinates for client {os.get('cli_id')}")
+            print(f"Error: Missing coordinates for client {order.get('cli_id')}")
             continue
 
-        clean_description = os['os_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
+        clean_description = order['order_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
 
         kml.newpoint(
-            name=f"{os['cli_id']} - {os['cli_name']}", 
+            name=f"{order['cli_id']} - {order['cli_name']}", 
             coords=[(lon, lat)], 
             description=(
                 f"SUPORTE A SER REALIZADO<br><br>"
-                f"{os['cli_id']} - {os['cli_name']}<br><br>"
-                f"LOGIN: {os['cli_login']}<br>"
-                f"SENHA: {os['cli_pass']}<br>"
-                f"PAINEL: {os['cli_panel']}<br><br>"
-                f"Localização: {os['cli_loc']}<br>"
-                f"Endereço: {os['cli_address']}<br><br>"
+                f"{order['cli_id']} - {order['cli_name']}<br><br>"
+                f"LOGIN: {order['cli_login']}<br>"
+                f"SENHA: {order['cli_pass']}<br>"
+                f"PAINEL: {order['cli_panel']}<br><br>"
+                f"Localização: {order['cli_loc']}<br>"
+                f"Endereço: {order['cli_address']}<br><br>"
                 f"Solucionar:<br>{clean_description}"
             )
         )
 
-    filename = "OS_MAP_GLOBAL.kml"
+    filename = "order_MAP_GLOBAL.kml"
     kml.save(filename)
 
-    return {
-        "status": f"Arquivo salvo localmente"
-    }
+    if os.path.exists(filename):
+        return FileResponse(path=filename, filename=filename, media_type='application/vnd.google-earth.kml+xml')
+    return {"error": "File generation failed"}
 
 if __name__ == "__main__":
     import uvicorn
