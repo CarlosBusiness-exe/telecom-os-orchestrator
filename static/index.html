@@ -12,10 +12,30 @@
 </head>
 <body>
     <div class="card">
-        <h2>Generate OS Map</h2>
+        <h2>Mapa OS unica</h2>
+        
         <input type="text" id="osId" placeholder="Enter OS ID">
-        <button onclick="downloadKML()">Download KML</button>
-        <button onclick="downloadFullKML()">Download Full KML</button>
+        <button onclick="downloadKML()">Download Single KML</button>
+        
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        
+        <h3>Mapa com todas OS</h3>
+       <label for="cidade">Cidade:</label>
+        <select id="cidade">
+            <option value="catalao">Catalao</option>
+            <option value="ouvidor">Ouvidor</option>
+            <option value="davinopolis">Davinopolis</option>
+        </select>
+
+        <label for="tipo">Tipo:</label>
+        <select id="tipo">
+            <option value="suporte">Suporte (rádio/fibra)</option> 
+            <option value="rural">Suporte Rural</option>
+            <option value="retirada">Retirada</option>
+        </select>
+        <br><br>
+        <button onclick="downloadFullKML()">Download Map KML</button>
+        
         <p id="status"></p>
     </div>
 
@@ -33,10 +53,40 @@
         }
 
         async function downloadFullKML() {
-            window.location.href = `/list_marker_create/`;
+        const cidade = document.getElementById('cidade').value;
+        const tipo = document.getElementById('tipo').value;
+        const status = document.getElementById('status');
+        
+        status.innerText = "Gerando mapa, aguarde...";
 
-            setTimeout(() => { status.innerText = "Check your downloads!"; }, 2000);
+        const queryParams = new URLSearchParams({
+            cidade: cidade,
+            tipo: tipo
+        });
+
+        try {
+            const response = await fetch("/list_marker_create/?" + queryParams.toString());
+            
+            if (!response.ok) throw new Error("Erro na resposta do servidor");
+
+            const blob = await response.blob();
+            
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "order_MAP_GLOBAL.kml";
+            document.body.appendChild(a);
+            a.click();
+            
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            status.innerText = "Mapa gerado com sucesso!";
+        } catch (error) {
+            console.error(error);
+            status.innerText = "Erro ao baixar o mapa.";
         }
+}
     </script>
 </body>
 </html>

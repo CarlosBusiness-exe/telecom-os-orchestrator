@@ -152,7 +152,8 @@ async def marker_create(order_id: str):
     raise HTTPException(status_code=500, detail="File generation failed")
 
 @app.get("/get_open_order/")
-async def fetch_order_by_filter(campo1: str = "h_fechamento", valor1: str = ""):
+async def fetch_order_by_filter(campo1: str = "h_fechamento", valor1: str = "", cidade: str = "Catalão", tipo: str = "Suporte (rádio/fibra)"):
+    print(f"DEBUG: Recebido no Python -> Cidade: '{cidade}' | Tipo: '{tipo}'")
     url = f"{VIGO_URL}/api/app_getcustom"
     
     headers = {
@@ -184,7 +185,7 @@ async def fetch_order_by_filter(campo1: str = "h_fechamento", valor1: str = ""):
                 "cli_loc":order["anotacao_tecnica"],
                 "cli_address":None,
                 "order_desc":order["historico"]
-            } for order in list_opened_order if order['cidade'] == "Catalão" and order['desc_tatendimento'] == "Suporte (rádio/fibra)"
+            } for order in list_opened_order if order['cidade'] == cidade and order['desc_tatendimento'] == tipo
             ]
             
             return city_order
@@ -196,9 +197,24 @@ async def fetch_order_by_filter(campo1: str = "h_fechamento", valor1: str = ""):
         raise HTTPException(status_code=502, detail="Erro de conexão ao buscar filtros")
         
 @app.get("/list_marker_create/")
-async def create_marker_list():
-    order_list = await fetch_order_by_filter()
+async def create_marker_list(cidade: str = "Catalão", tipo: str = "Suporte (rádio/fibra)"):
+    CITY_MAP = {
+        "catalao": "Catalão",
+        "ouvidor": "Ouvidor",
+        "davinopolis": "Davinópolis"
+    }
+
+    TYPE_MAP = {
+        "suporte": "Suporte (rádio/fibra)",
+        "rural": "Suporte Rural",
+        "retirada": "Retirada"
+    }
     
+    cidade_real = CITY_MAP.get(cidade, "Catalão")
+    tipo_real = TYPE_MAP.get(tipo, "Suporte (rádio/fibra)")
+
+    order_list = await fetch_order_by_filter(cidade=cidade_real, tipo=tipo_real)
+    print(order_list)
     kml = simplekml.Kml()
 
     for order in order_list:
@@ -209,8 +225,8 @@ async def create_marker_list():
             lon = client_data.get('longitude')
             lat = client_data.get('latitude')
             
-            if not lon or not lat:
-                print(f"Error: Missing coordinates for client {order.get('cli_id')}")
+            if not lon or not lat or str(lon) == "0" or str(lat) == "0":
+                print(f"Skipping client {order.get('cli_id')}: Invalid GPS (0,0)")
                 continue
 
             clean_description = order['order_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
