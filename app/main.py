@@ -226,8 +226,9 @@ async def create_marker_list(cidade: str = "Catalão", tipo: str = "Suporte (rá
             lat = client_data.get('latitude')
             
             if not lon or not lat or str(lon) == "0" or str(lat) == "0":
-                print(f"Skipping client {order.get('cli_id')}: Invalid GPS (0,0)")
-                continue
+                print(f"CLient without coords {order.get('cli_id')}: setted in default place")
+                lon = "-47.94679761674606"
+                lat = "-18.158900260837715"
 
             clean_description = order['order_desc'].replace('\r\n', '<br>').replace('\n', '<br>')
 
