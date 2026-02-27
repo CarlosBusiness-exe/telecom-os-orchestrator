@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000" # Mapeia a porta do PC para a do Contêiner
+    env_file:
+      - .env # Carrega suas chaves automagicamente
+    volumes:
+      - .:/app # Permite que alterações no código reflitam no contêiner (bom para dev)
+    restart: always # Reinicia se o servidor cair
