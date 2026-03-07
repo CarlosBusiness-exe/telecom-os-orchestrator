@@ -1,6 +1,7 @@
 import httpx
 import os
 from dotenv import load_dotenv
+import asyncio
 
 load_dotenv()
 
@@ -35,3 +36,7 @@ async def get_auth_token():
     except Exception as e:
         print(f"Erro ao conectar com a API: {e}")
         return None
+    
+if __name__ == "__main__":
+    token = asyncio.run(get_auth_token())
+    print(f"Token: {token}")
