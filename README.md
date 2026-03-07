@@ -18,10 +18,9 @@ I developed an automated **Orchestrator** that interfaces with the **VIGO API**.
 
 ## 🎥 Project Demo
 Below is a demonstration of the orchestrator in action using fictional data to protect client privacy (LGPD compliance):
+https://github.com/user-attachments/assets/05a291a3-b12e-4081-8b88-7cfab0ed2b98
 
-<video src="https://github.com/CarlBorba/telecom-os-orchestrator/blob/main/demo_video.mp4?raw=true" controls="controls" style="max-width: 50%;">
-  Your browser does not support the video tag.
-</video>
+
 
 ## 🛠️ Tech Stack & Architecture
 * **Backend:** FastAPI (Asynchronous Python) for high-concurrency API requests.
