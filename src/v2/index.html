@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CBNet Support Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap');
+        
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            color: #dcdcdc;
+        }
+
+        .os-card {
+            border: 2px solid #2d5a27;
+            background-color: #0d210b;
+            transition: transform 0.1s;
+        }
+        .os-card:hover {
+            border-color: #4ade80;
+            background-color: #143311;
+        }
+
+        .os-header span {
+            display: inline-block;
+            padding: 0 8px;
+            border-right: 1px solid #2d5a27;
+        }
+        .os-header span:last-child {
+            border-right: none;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid #4ade80;
+            border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;
+        }
+
+        .os-description {
+        white-space: pre-wrap; /* Keeps line breaks from VIGO */
+        word-wrap: break-word;
+        color: #a3e635; /* Lime green for better readability */
+        padding-top: 8px;
+        border-top: 1px solid #1a3a16;
+        margin-top: 8px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="p-8">
+
+    <div class="max-w-7xl mx-auto">
+        <div class="flex justify-between items-end mb-8 border-b border-gray-700 pb-4">
+            <h1>Ordens de serviços abertas <span id="total-count" class="text-green-500 text-3xl"></span></h1>
+            
+            <div class="flex gap-4 items-center">
+                <input type="date" id="data-filtro" class="bg-gray-800 text-white border border-gray-600 text-sm rounded-lg p-2.5 focus:ring-green-500">
+
+                <select id="tipo-filtro" class="bg-gray-800 text-white border border-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                    <option value="">Todos (Suporte/Rural)</option>
+                    <option value="Suporte (rádio/fibra)">Suporte (rádio/fibra)</option>
+                    <option value="Suporte Rural">Suporte Rural</option>
+                </select>
+                
+                <button onclick="fetchOrders()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded border border-blue-400">
+                    Atualizar
+                </button>
+            </div>
+        </div>
+
+        <div id="loading" class="hidden flex justify-center items-center py-10">
+            <div class="loader"></div>
+            <span class="ml-4 text-green-400">Buscando na API VIGO...</span>
+        </div>
+
+        <div id="error-message" class="hidden bg-red-900 border border-red-500 text-red-200 px-4 py-3 rounded relative mb-4"></div>
+
+        <div id="os-container" class="space-y-4">
+            </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = '/api/dashboard/orders';
+
+        function formatDate(dateString) {
+            if (!dateString) return 'S/Data';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR');
+            } catch (e) { return dateString; }
+        }
+
+        async function fetchOrders() {
+            const container = document.getElementById('os-container');
+            const loader = document.getElementById('loading');
+            const errorDiv = document.getElementById('error-message');
+            const countLabel = document.getElementById('total-count');
+            
+            // Novos valores dos inputs
+            const typeFilter = document.getElementById('tipo-filtro').value;
+            const dateFilter = document.getElementById('data-filtro').value;
+            
+            container.innerHTML = '';
+            errorDiv.classList.add('hidden');
+            loader.classList.remove('hidden');
+            countLabel.innerText = '';
+
+            // Construção dinâmica da URL com múltiplos filtros
+            let params = new URLSearchParams();
+            if (typeFilter) params.append('tipo', typeFilter);
+            if (dateFilter) params.append('data', dateFilter);
+            
+            const url = `${API_BASE_URL}?${params.toString()}`;
+
+            try {
+                const response = await fetch(url);
+                
+                if (response.status === 404) {
+                    loader.classList.add('hidden');
+                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhuma ordem de serviço encontrada com este filtro.</p>';
+                    countLabel.innerText = '(0)';
+                    return;
+                }
+
+                if (!response.ok) throw new Error(`Erro API: ${response.status}`);
+
+                const data = await response.json();
+                loader.classList.add('hidden');
+                
+                countLabel.innerText = `(${data.length})`;
+
+                data.forEach((os, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'os-card rounded-md p-3 text-sm text-green-100 font-mono tracking-tight shadow-lg';
+                    
+                    const cleanDesc = os.descricao.replace(/\n/g, ' ').substring(0, 100) + '...';
+
+                    card.innerHTML = `
+                        <div class="os-header flex flex-wrap mb-2 border-b border-green-900 pb-2 items-center">
+                            <span class="bg-green-700 text-white px-2 py-0.5 rounded-full mr-2 font-bold">#${index + 1}</span>
+                            <span class="text-yellow-400 font-bold">OS: ${os.os_id}</span>
+                            <span>ID cliente: ${os.cli_id}</span>
+                            <span class="font-bold text-white truncate max-w-xs">${os.cli_name}</span>
+                            <span>Bairro: ${os.bairro}</span>
+                            <span>Ab: ${formatDate(os.abertura)}</span>
+                            <span>Hr: ${os.hora}</span>
+                            <span class="text-blue-300">${os.tipo}</span>
+                            <span class="text-purple-300">Téc: ${os.funcionario}</span>
+                        </div>
+                        <div class="flex justify-between items-center opacity-80 pl-2">
+                            <span class="truncate w-3/4">Desc: ${cleanDesc}</span>
+                            <span>Agenda: ${formatDate(os.agendamento)}</span>
+                            <span class="text-green-400 font-bold">R$ ${os.valor.toFixed(2)}</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (error) {
+                loader.classList.add('hidden');
+                errorDiv.innerText = "Falha ao carregar ordens de serviço. Tente novamente.";
+                errorDiv.classList.remove('hidden');
+                console.error('Error fetching OS:', error);
+            }
+        }
+
+        window.onload = fetchOrders;
+    </script>
+</body>
+</html>
