@@ -92,8 +92,8 @@ async def fetch_order_details(order_id: str):
             raise HTTPException(status_code=404, detail="Order not found")
         
         dict_data = list_data[0]
-        return dict_data
-        """return {
+        #return dict_data
+        return {
             "cli_id": dict_data["id_cliente"],
             "cli_name": dict_data["nome"],
             "cli_login": "",
@@ -102,7 +102,7 @@ async def fetch_order_details(order_id: str):
             "cli_loc": dict_data["anotacao_tecnica"],
             "cli_address": "",
             "order_desc": dict_data["historico"]
-        }"""
+        }
     raise HTTPException(status_code=response.status_code, detail="VIGO API Error")
 
 @app.get("/client/{cli_id}")

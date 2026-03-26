@@ -8,48 +8,26 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&display=swap');
         
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        h1 {
-            font-size: 3rem;
-            color: #dcdcdc;
-        }
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; }
+        h1 { font-size: 2.5rem; color: #dcdcdc; }
 
         .os-card {
             border: 2px solid #2d5a27;
             background-color: #0d210b;
             transition: transform 0.1s;
         }
-        .os-card:hover {
-            border-color: #4ade80;
-            background-color: #143311;
-        }
+        .os-card:hover { border-color: #4ade80; background-color: #143311; }
 
         .os-header span {
             display: inline-block;
             padding: 0 8px;
             border-right: 1px solid #2d5a27;
         }
-        .os-header span:last-child {
-            border-right: none;
-        }
+        .os-header span:last-child { border-right: none; }
         
         .loader {
             border: 4px solid #f3f3f3; border-top: 4px solid #4ade80;
             border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite;
-        }
-
-        .os-description {
-        white-space: pre-wrap; /* Keeps line breaks from VIGO */
-        word-wrap: break-word;
-        color: #a3e635; /* Lime green for better readability */
-        padding-top: 8px;
-        border-top: 1px solid #1a3a16;
-        margin-top: 8px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -57,33 +35,37 @@
 <body class="p-8">
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex justify-between items-end mb-8 border-b border-gray-700 pb-4">
-            <h1>Ordens de serviços abertas <span id="total-count" class="text-green-500 text-3xl"></span></h1>
+        <div class="flex justify-between items-center mb-8 border-b border-gray-700 pb-6">
+            <h1>Ordens abertas <span id="total-count" class="text-green-500 font-bold ml-2"></span></h1>
             
-            <div class="flex gap-4 items-center">
-                <input type="date" id="data-filtro" class="bg-gray-800 text-white border border-gray-600 text-sm rounded-lg p-2.5 focus:ring-green-500">
+            <div class="flex gap-3 items-center flex-wrap justify-end">
+                <a href="https://www.google.com/maps/d/u/0/viewer?mid=1zEVbCQ9d4aq1-LyJf8sLtfZorFBvoI4&ll=-18.104785370525065%2C-47.85893050000001&z=11" target="_blank" class="bg-red-700 hover:bg-red-600 text-white font-bold py-2 px-4 rounded border border-red-500 transition flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
+                    Google Maps
+                </a>
 
-                <select id="tipo-filtro" class="bg-gray-800 text-white border border-gray-600 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
-                    <option value="">Todos (Suporte/Rural)</option>
+                <a href="/maps" target="_blank" class="bg-green-700 hover:bg-green-600 text-white font-bold py-2 px-4 rounded border border-green-500 transition flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 20l-5.447-2.724A2 2 0 013 15.382V5.618a2 2 0 011.553-1.944L9 2l6 3 5.447-2.724A2 2 0 0121 4.236v9.764a2 2 0 01-1.553 1.944L15 19l-6 1z"></path></svg>
+                    Criador de Mapas
+                </a>
+
+                <input type="date" id="data-filtro" class="bg-gray-800 text-white border border-gray-600 rounded-lg p-2 text-sm">
+
+                <select id="tipo-filtro" class="bg-gray-800 text-white border border-gray-600 text-sm rounded-lg p-2">
+                    <option value="">Todos os Suportes</option>
                     <option value="Suporte (rádio/fibra)">Suporte (rádio/fibra)</option>
                     <option value="Suporte Rural">Suporte Rural</option>
+                    <option value="Help Desk">Help Desk</option>
                 </select>
                 
-                <button onclick="fetchOrders()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded border border-blue-400">
+                <button onclick="fetchOrders()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-6 rounded border border-blue-400 transition">
                     Atualizar
                 </button>
             </div>
         </div>
 
-        <div id="loading" class="hidden flex justify-center items-center py-10">
-            <div class="loader"></div>
-            <span class="ml-4 text-green-400">Buscando na API VIGO...</span>
-        </div>
-
-        <div id="error-message" class="hidden bg-red-900 border border-red-500 text-red-200 px-4 py-3 rounded relative mb-4"></div>
-
-        <div id="os-container" class="space-y-4">
-            </div>
+        <div id="loading" class="hidden flex justify-center items-center py-10"><div class="loader"></div></div>
+        <div id="os-container" class="space-y-4"></div>
     </div>
 
     <script>
@@ -91,86 +73,61 @@
 
         function formatDate(dateString) {
             if (!dateString) return 'S/Data';
-            try {
-                const date = new Date(dateString);
-                return date.toLocaleDateString('pt-BR');
-            } catch (e) { return dateString; }
+            try { return new Date(dateString).toLocaleDateString('pt-BR'); } catch (e) { return dateString; }
         }
 
         async function fetchOrders() {
             const container = document.getElementById('os-container');
             const loader = document.getElementById('loading');
-            const errorDiv = document.getElementById('error-message');
             const countLabel = document.getElementById('total-count');
-            
-            // Novos valores dos inputs
             const typeFilter = document.getElementById('tipo-filtro').value;
             const dateFilter = document.getElementById('data-filtro').value;
             
             container.innerHTML = '';
-            errorDiv.classList.add('hidden');
             loader.classList.remove('hidden');
-            countLabel.innerText = '';
 
-            // Construção dinâmica da URL com múltiplos filtros
             let params = new URLSearchParams();
             if (typeFilter) params.append('tipo', typeFilter);
             if (dateFilter) params.append('data', dateFilter);
-            
-            const url = `${API_BASE_URL}?${params.toString()}`;
 
             try {
-                const response = await fetch(url);
-                
+                const response = await fetch(`${API_BASE_URL}?${params.toString()}`);
                 if (response.status === 404) {
                     loader.classList.add('hidden');
-                    container.innerHTML = '<p class="text-gray-400 text-center py-8">Nenhuma ordem de serviço encontrada com este filtro.</p>';
                     countLabel.innerText = '(0)';
                     return;
                 }
-
-                if (!response.ok) throw new Error(`Erro API: ${response.status}`);
-
                 const data = await response.json();
                 loader.classList.add('hidden');
-                
                 countLabel.innerText = `(${data.length})`;
 
                 data.forEach((os, index) => {
                     const card = document.createElement('div');
                     card.className = 'os-card rounded-md p-3 text-sm text-green-100 font-mono tracking-tight shadow-lg';
                     
-                    const cleanDesc = os.descricao.replace(/\n/g, ' ').substring(0, 100) + '...';
+                    // Reverted to summary (100 chars)
+                    const summary = os.descricao.replace(/\n/g, ' ').substring(0, 100) + '...';
 
                     card.innerHTML = `
                         <div class="os-header flex flex-wrap mb-2 border-b border-green-900 pb-2 items-center">
                             <span class="bg-green-700 text-white px-2 py-0.5 rounded-full mr-2 font-bold">#${index + 1}</span>
                             <span class="text-yellow-400 font-bold">OS: ${os.os_id}</span>
-                            <span>ID cliente: ${os.cli_id}</span>
+                            <span>ID: ${os.cli_id}</span>
                             <span class="font-bold text-white truncate max-w-xs">${os.cli_name}</span>
                             <span>Bairro: ${os.bairro}</span>
-                            <span>Ab: ${formatDate(os.abertura)}</span>
-                            <span>Hr: ${os.hora}</span>
                             <span class="text-blue-300">${os.tipo}</span>
                             <span class="text-purple-300">Téc: ${os.funcionario}</span>
                         </div>
                         <div class="flex justify-between items-center opacity-80 pl-2">
-                            <span class="truncate w-3/4">Desc: ${cleanDesc}</span>
+                            <span class="truncate w-3/4">Desc: ${summary}</span>
                             <span>Agenda: ${formatDate(os.agendamento)}</span>
                             <span class="text-green-400 font-bold">R$ ${os.valor.toFixed(2)}</span>
                         </div>
                     `;
                     container.appendChild(card);
                 });
-
-            } catch (error) {
-                loader.classList.add('hidden');
-                errorDiv.innerText = "Falha ao carregar ordens de serviço. Tente novamente.";
-                errorDiv.classList.remove('hidden');
-                console.error('Error fetching OS:', error);
-            }
+            } catch (error) { loader.classList.add('hidden'); }
         }
-
         window.onload = fetchOrders;
     </script>
 </body>
