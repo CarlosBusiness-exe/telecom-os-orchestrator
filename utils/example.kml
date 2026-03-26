@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">
+    <Document id="1">
+        <Placemark id="3">
+            <name>14134 - Carl Jonson</name>
+            <description>SUPORTE A SER REALIZADO&lt;br&gt;&lt;br&gt;14134 - Carl Jonson&lt;br&gt;&lt;br&gt;LOGIN: None&lt;br&gt;SENHA: None&lt;br&gt;PAINEL: None&lt;br&gt;&lt;br&gt;Localização: https://maps.app.goo.gl/locExample&lt;br&gt;Endereço: Address&lt;br&gt;&lt;br&gt;Solucionar:&lt;br&gt;Data: 17/09/2025 - Hora: 17:40&lt;br&gt;Operador: Carl&lt;br&gt;CTO 0446 / PORTA 01&lt;br&gt;LINK 02 FORA, VERIFICAR SE E ROMPIMENTO.                                                                                                                                                                                                                                                                                                                                                                               &lt;br&gt;===========================================&lt;br&gt;</description>
+            <Point id="2">
+                <coordinates>-47.937225315339525,-18.17273323585057,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="5">
+            <name>14642 - Jack Reacher</name>
+            <description>SUPORTE A SER REALIZADO&lt;br&gt;&lt;br&gt;14642 - Jack Reacher&lt;br&gt;&lt;br&gt;LOGIN: None&lt;br&gt;SENHA: None&lt;br&gt;PAINEL: None&lt;br&gt;&lt;br&gt;Localização: https://maps.app.goo.gl/locExample&lt;br&gt;Endereço: Address&lt;br&gt;&lt;br&gt;Solucionar:&lt;br&gt;Data: 29/10/2025 - Hora: 16:16&lt;br&gt;Operador: Carl&lt;br&gt;MULTI 502524461&lt;br&gt;- Cliente alegando conexão lenta, após solicitado speed test resultado 2.61Mbps, enviar técnico.                                                                                                                                                                                                                                                                                                                                                                                    &lt;br&gt;===========================================&lt;br&gt;</description>
+            <Point id="4">
+                <coordinates>-47.95284644524682,-18.154363349920953,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="7">
+            <name>14036 - Ragnar Lothbrok</name>
+            <description>SUPORTE A SER REALIZADO&lt;br&gt;&lt;br&gt;14036 - Ragnar Lothbrok&lt;br&gt;&lt;br&gt;LOGIN: None&lt;br&gt;SENHA: None&lt;br&gt;PAINEL: None&lt;br&gt;&lt;br&gt;Localização: https://maps.app.goo.gl/locExample&lt;br&gt;Endereço: Address&lt;br&gt;&lt;br&gt;Solucionar:&lt;br&gt;Data: 21/01/2026 - Hora: 09:27&lt;br&gt;Operador: Carl&lt;br&gt;ONU COM POTENCIA ATENUADA.&lt;br&gt;===========================================&lt;br&gt;</description>
+            <Point id="6">
+                <coordinates>-47.94123127116511,-18.16512294394146,0.0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark id="9">
+            <name>135 - Walter White</name>
+            <description>SUPORTE A SER REALIZADO&lt;br&gt;&lt;br&gt;135 - Walter White&lt;br&gt;&lt;br&gt;LOGIN: None&lt;br&gt;SENHA: None&lt;br&gt;PAINEL: None&lt;br&gt;&lt;br&gt;Localização:  https://maps.app.goo.gl/locExample&lt;br&gt;Endereço: Addres&lt;br&gt;&lt;br&gt;Solucionar:&lt;br&gt;Data: 19/02/2026 - Hora: 10:43&lt;br&gt;Operador: Carl&lt;br&gt;Cliente solicita troca da onu. Disse que o ultimo técnico disse que é muito antiga, questionando para troca para ver se melhora. cliente na loja.  &lt;br&gt;TERÇA PRA FRENTE DAS 13 AS 14:30 PARA ATENDIMENTO 64 98114-0262                                                                                                                                                                                                                                                                                                                                                                                   &lt;br&gt;===========================================&lt;br&gt;</description>
+            <Point id="8">
+                <coordinates>-47.965718516578534,-18.156484110378965,0.0</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>
