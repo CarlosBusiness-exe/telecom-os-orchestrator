@@ -106,7 +106,7 @@
                     card.className = 'os-card rounded-md p-3 text-sm text-green-100 font-mono tracking-tight shadow-lg';
                     
                     // Reverted to summary (100 chars)
-                    const summary = os.descricao.replace(/\n/g, ' ').substring(0, 100) + '...';
+                    const summary = os.descricao.replace(/\n/g, ' ');
 
                     card.innerHTML = `
                         <div class="os-header flex flex-wrap mb-2 border-b border-green-900 pb-2 items-center">
