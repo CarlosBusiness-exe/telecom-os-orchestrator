@@ -207,7 +207,7 @@ async def get_filtered_support_orders(tipo_filtro: Optional[str] = None, data_fi
     if response.status_code != 200: return []
     
     raw_data = response.json()
-    ALLOWED_TYPES = ["Suporte (rádio/fibra)", "Suporte Rural", "Help Desk"]
+    ALLOWED_TYPES = ["Suporte (rádio/fibra)", "Suporte Rural", "Help Desk", "Retirada (fibra/rádio)"]
     ALLOWED_CITY = ["Catalão"]
     
     types_to_filter = [tipo_filtro] if tipo_filtro in ALLOWED_TYPES else ALLOWED_TYPES
