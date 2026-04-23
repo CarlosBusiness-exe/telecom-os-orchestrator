@@ -38,7 +38,7 @@ class DashboardOrder(BaseModel):
 app = FastAPI(title="Cbnet Support System Unified")
 
 # Monta arquivos estáticos
-app.mount("/static", StaticFiles(directory="src/v1/static"), name="static")
+app.mount("/static", StaticFiles(directory="src/v2/static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
@@ -86,7 +86,6 @@ async def fetch_client_data(cli_id: str):
     raise HTTPException(status_code=response.status_code, detail="Client API Error")
 
 async def fetch_order_by_filter(cidade: str, tipo: str):
-    """Lógica de filtro original da sua V1 - ATUALIZADA"""
     payload = {"campo1": "h_fechamento", "campo1_valor": "", "campo2": None, "campo2_valor": None}
     response = await vigo_request("POST", "/api/app_getcustom", payload)
     
@@ -97,7 +96,8 @@ async def fetch_order_by_filter(cidade: str, tipo: str):
                 "cli_id": o["id_cliente"],
                 "cli_name": o["nome"],
                 "Tipo": o["desc_tatendimento"],
-                "cli_loc": o["anotacao_tecnica"],
+                #"cli_loc": o["referencia"],
+                "cli_login": o["anotacao_tecnica"],
                 "order_desc": o["historico"],
                 "cidade": o.get("cidade"),
                 "desc_tatendimento": o.get("desc_tatendimento"),
@@ -148,10 +148,10 @@ async def _create_kml_file(order_list, filename):
             balloon_content = (
                 f"SUPORTE A SER REALIZADO<br><br>"
                 f"{order['cli_id']} - {order['cli_name']}<br><br>"
-                f"LOGIN: None<br>"
+                f"LOGIN: {order['anotacao_tecnica']}<br>"
                 f"SENHA: None<br>"
                 f"PAINEL: None<br><br>"
-                f"Localização: {order.get('anotacao_tecnica', 'N/A')}<br>"
+                f"Localização: {client.get('referencia', 'N/A')}<br>"
                 f"Endereço: {order.get('endereco', 'N/A')}, {order.get('bairro', 'N/A')}, {order.get('cidade', 'N/A')}<br><br>"
                 f"Solucionar:<br>"
                 f"{clean_desc}<br>"
